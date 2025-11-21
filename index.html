@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi Candidatures CAP AEPE</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .btn:hover {
+            background: #5568d3;
+        }
+        .form-box {
+            background: #f0f4ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+        }
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        tr:hover {
+            background: #f8f9ff;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .badge-attente { background: #fff3cd; color: #856404; }
+        .badge-relance { background: #cce5ff; color: #004085; }
+        .badge-entretien { background: #e7d4f5; color: #6f42c1; }
+        .badge-accepte { background: #d4edda; color: #155724; }
+        .badge-refuse { background: #f8d7da; color: #721c24; }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            width: 300px;
+            margin: 100px auto;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .modal-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Suivi de Candidatures - CAP AEPE</h1>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="total">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="acceptes">0</div>
+                <div class="stat-label">Acceptees</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="entretiens">0</div>
+                <div class="stat-label">Entretiens</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="attente">0</div>
+                <div class="stat-label">En attente</div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="showForm()">+ Ajouter une candidature</button>
+
+        <div class="form-box" id="formBox">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Structure</label>
+                    <input type="text" id="structure" placeholder="Ex: Creche Les Bambins">
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <select id="type">
+                        <option>EAJE</option>
+                        <option>Ecole maternelle</option>
+                        <option>ACM</option>
+                        <option>Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="date">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contact</label>
+                    <input type="text" id="contact" placeholder="Ex: Mme Dupont">
+                </div>
+                <div class="form-group">
+                    <label>Telephone</label>
+                    <input type="text" id="tel" placeholder="Ex: 06 12 34 56 78">
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button class="btn" onclick="addCandidature()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+
+        <table id="table">
+            <thead>
+                <tr>
+                    <th>Structure</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Contact</th>
+                    <th>Telephone</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <h3>Changer le statut</h3>
+            <button class="modal-btn badge-attente" onclick="changeStatus('En attente')">En attente</button>
+            <button class="modal-btn badge-relance" onclick="changeStatus('Relance')">Relance</button>
+            <button class="modal-btn badge-entretien" onclick="changeStatus('Entretien')">Entretien</button>
+            <button class="modal-btn badge-accepte" onclick="changeStatus('Accepte')">Accepte</button>
+            <button class="modal-btn badge-refuse" onclick="changeStatus('Refuse')">Refuse</button>
+            <button class="btn" onclick="closeModal()" style="margin-top: 10px;">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        var data = [];
+        var editId = null;
+
+        function showForm() {
+            var box = document.getElementById('formBox');
+            box.style.display = box.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addCandidature() {
+            var s = document.getElementById('structure').value;
+            var t = document.getElementById('type').value;
+            var d = document.getElementById('date').value;
+            var c = document.getElementById('contact').value;
+            var tel = document.getElementById('tel').value;
+
+            if (s && d) {
+                data.push({
+                    id: Date.now(),
+                    structure: s,
+                    type: t,
+                    date: d,
+                    status: 'En attente',
+                    contact: c,
+                    tel: tel
+                });
+                document.getElementById('structure').value = '';
+                document.getElementById('date').value = '';
+                document.getElementById('contact').value = '';
+                document.getElementById('tel').value = '';
+                showForm();
+                render();
+            } else {
+                alert('Veuillez remplir la structure et la date');
+            }
+        }
+
+        function deleteItem(id) {
+            if (confirm('Supprimer cette candidature?')) {
+                data = data.filter(function(item) { return item.id !== id; });
+                render();
+            }
+        }
+
+        function openModal(id) {
+            editId = id;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            editId = null;
+        }
+
+        function changeStatus(newStatus) {
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].id === editId) {
+                    data[i].status = newStatus;
+                    break;
+                }
+            }
+            closeModal();
+            render();
+        }
+
+        function render() {
+            var tbody = document.getElementById('tbody');
+            tbody.innerHTML = '';
+
+            for (var i = 0; i < data.length; i++) {
+                var item = data[i];
+                var row = tbody.insertRow();
+                
+                row.insertCell(0).innerHTML = '<strong>' + item.structure + '</strong>';
+                row.insertCell(1).textContent = item.type;
+                row.insertCell(2).textContent = item.date;
+                
+                var statusClass = item.status.toLowerCase().replace(' ', '-');
+                var statusCell = row.insertCell(3);
+                statusCell.innerHTML = '<span class="badge badge-' + statusClass + '" onclick="openModal(' + item.id + ')">' + item.status + '</span>';
+                
+                row.insertCell(4).textContent = item.contact || '-';
+                row.insertCell(5).textContent = item.tel || '-';
+                
+                var actionCell = row.insertCell(6);
+                actionCell.innerHTML = '<button class="btn-delete" onclick="deleteItem(' + item.id + ')">Supprimer</button>';
+            }
+
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('total').textContent = data.length;
+            
+            var acc = 0, ent = 0, att = 0;
+            for (var i = 0; i < data.length; i++) {
+                if (data[i].status === 'Accepte') acc++;
+                if (data[i].status === 'Entretien') ent++;
+                if (data[i].status === 'En attente') att++;
+            }
+            
+            document.getElementById('acceptes').textContent = acc;
+            document.getElementById('entretiens').textContent = ent;
+            document.getElementById('attente').textContent = att;
+        }
+
+        data.push({
+            id: Date.now(),
+            structure: 'Creche Les Bambins',
+            type: 'EAJE',
+            date: '2024-11-15',
+            status: 'En attente',
+            contact: 'Mme Dupont',
+            tel: '06 12 34 56 78'
+        });
+
+        render();
+    </script>
+</body>
+</html>
